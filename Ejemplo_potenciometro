@@ -36,7 +36,7 @@ void setup() {
 }
 void loop() {
   
-    Lecturas.Pos_X = analogRead((JOY_X*180)/279);   //Mapeo del eje Joystick en la parte de lqas abscisas
+    Lecturas.Pos_X = analogRead(JOY_X)*180/279;   //Mapeo del eje Joystick en la parte de lqas abscisas
     
             Serial.print("El robot se va a mover: "); 
            // Serial.println(Lecturas.Pos_X);

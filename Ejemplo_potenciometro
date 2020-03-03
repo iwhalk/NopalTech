@@ -4,10 +4,10 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define JOY_X A5
+#define JOY_X A5  //Definimos pines analogicos para el Joystick en los ejes ordenados y coordenados
 #define JOY_Y A4
 
-struct Posicion {
+struct Posicion {   //Estructura de los valores que vamos a enviar
   byte Pos_X;
   byte Pos_Y;
 };
@@ -20,7 +20,7 @@ struct Valor{
 Posicion Movimiento;
 Valor Lecturas;
 
-RF24 transmisor(9, 10);
+RF24 transmisor(9,10);
 
 const byte direccion[][6] = {"00001"};
 boolean buttonState = 0;
@@ -36,18 +36,17 @@ void setup() {
 }
 void loop() {
   
-    byte Angulo = (Lecturas.Pos_X*180)/279;
-    Lecturas.Pos_X = analogRead(JOY_X);
-
+    Lecturas.Pos_X = analogRead((JOY_X*180)/279);   //Mapeo del eje Joystick en la parte de lqas abscisas
+    
             Serial.print("El robot se va a mover: "); 
            // Serial.println(Lecturas.Pos_X);
                    
-            Serial.print(Angulo); 
+            Serial.print(Lecturas.Pos_X); 
             Serial.println(" en el eje X");
   
   transmisor.stopListening();
+  transmisor.write(&Lecturas.Pos_X, sizeof(Lecturas.Pos_X));
   
-  transmisor.write(&Angulo, sizeof(Angulo));
 }
 ==============================================================================================================================
 \\Programa de ejemplo de receptor + servo

@@ -54,7 +54,20 @@ void loop() {
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-#include <Servo.h>
+#include <Servo.h> //Inclimos la libreria para controlar los servos PWN
+
+struct Posicion {   //Estructura de los valores que vamos a enviar
+  byte Pos_X = 0;
+  byte Pos_Y = 0;
+};
+
+struct Valor{
+  int Pos_X;
+  int Pos_Y;
+};
+
+Posicion Movimiento;
+Valor Lecturas;
 
 RF24 receptor(9, 10);
 const byte direccion[][6] = {"00001"};
@@ -62,25 +75,23 @@ Servo MicroServo;
 
 void setup() {
  
-  
-  MicroServo.attach(5);
+  MicroServo.attach(5); //Definimos el control del servo en el pin 5 PWM
   receptor.begin();
 
   receptor.openReadingPipe(1, direccion[0]);
   receptor.setPALevel(RF24_PA_MAX);
+  
 }
 
 void loop() {
-  
-  delay(5);
   
   receptor.startListening();
   
   if ( receptor.available()) {
     while (receptor.available()) {
-      int anguloV = 0;
-      receptor.read(&anguloV, sizeof(anguloV));
-      MicroServo.write(anguloV);
+      receptor.read(&Lecturas.Pos_X, sizeof(Lecturas.Pos_X));
+      MicroServo.write(Lecturas.Pos_X); //Los datos de Pos_X son mandados al servo con la funcion write
     }
   }
+  
 }

@@ -1,4 +1,3 @@
-  
 #include <SPI.h>
 #include "nRF24L01.h"
 #include "RF24.h"
@@ -12,7 +11,7 @@
 #define VELOCIDAD_DATA RF24_2MBPS // Velocidad de datos 
 #define BYTES_ENVIAR 4 // Máximo de bytes a enviar
 
-RF24 Receptor (9,10); //Inicializa chip enable y chip select
+RF24 NRF24 (9,10); //Inicializa chip enable y chip select
 const uint32 Pipes[2]={0xFFFFA0, 0xFFFFB0}; // Direcciones de tuberías
 
 void Configuracion()
@@ -20,21 +19,24 @@ void Configuracion()
     const int Interfencia[CANALES]; // Índice de interferencia
     const byte Canal_Actual; // Variable conde se guarda el canal actual de comunicación
 
-    Receptor.setAddressWidth(TAMANO_DIR); // Configura el tamaño al valor de elección (linea 6)
-    //Receptor.setRetries(RETRIES_DELAY, RETRIES_COUNT); // Configura la velocidad de cada uno de los intentos y cuantos intentos serán
-    //Receptor.setAutoAck(true); // Activa el ack (Confirmación de respuesta) Activado por default
-    //Receptor.enableAckPayload(); // Permite variar la carga de datos a enviar
-    //Receptor.setPayLoadSize(BYTES_ENVIAR); // Configura el máximo de bytes a enviar
-    Receptor.setPALevel(RF24_PA_MAX); // Configura la potencia de transmición al máximo
-    //Receptor.setDataRate(VELOCIDAD_DATA); // Configura la velocidad de datos
+    NRF24.setAddressWidth(TAMANO_DIR); // Configura el tamaño al valor de elección (linea 6)
+    //NRF24.setRetries(RETRIES_DELAY, RETRIES_COUNT); // Configura la velocidad de cada uno de los intentos y cuantos intentos serán
+    //NRF24.setAutoAck(true); // Activa el ack (Confirmación de respuesta) Activado por default
+    //NRF24.enableAckPayload(); // Permite variar la carga de datos a enviar
+    //NRF24.setPayLoadSize(BYTES_ENVIAR); // Configura el máximo de bytes a enviar
+    NRF24.setPALevel(RF24_PA_MAX); // Configura la potencia de transmición al máximo
+    //NRF24.setDataRate(VELOCIDAD_DATA); // Configura la velocidad de datos
    // memset(Interfencia, 0, sizeof(Interferencia)); // Limpia los valores de interfencia 
     
-    Receptor.setChannel(1); // Selección el canal
-    //Canal_Actual=Receptor.getChannel(); // Obtiene el canal de configuración actual
+    NRF24.setChannel(1); // Selección el canal
+    //Canal_Actual=NRF24.getChannel(); // Obtiene el canal de configuración actual
     Serial.print("Este es el canal actual: "); // Imprime el canal
     Serial.println(Canal_Actual); // Imprime el canal
     
-    Receptor.begin(); // Inicia el módulo
+    NRF24.begin(); // Inicia el módulo
+    
+    NRF24.openWritingPipe(Pipes[1]); // Abre la dirección de la tubería para comenzar a escribir
+    NRF24.openReadingPipe(1,Pipes[0]); // Abre el pipe para comenzar aleer
 
 
     /*while (REPS_SCAN--)
@@ -43,37 +45,41 @@ void Configuracion()
 
         while (i--)
         {
-            Receptor.setChannel(i); // Selección el canal
-            Receptor.startListening();  // Escucha por un momento
+            NRF24.setChannel(i); // Selección el canal
+            NRF24.startListening();  // Escucha por un momento
             delayMicroseconds(128);
-            Receptor.stopListening(); // Deja de escuchar
+            NRF24.stopListening(); // Deja de escuchar
             
-            if ( Receptor.testCarrier()) // Tenemos o no interfencia en el canal
+            if ( NRF24.testCarrier()) // Tenemos o no interfencia en el canal
             {
                 ++Interfencia[i]; // Agrega 1 a la interfencia 
             }
         }
     }*/
-
 }
 
 
 Iniciar_Control_Remoto(){
   
-  if(Receptor.failureDetected){ //NRF24.failureDetected detecta un fallo en las conexiones Fisicas del NRF24
-    Receptor.failureDetected = false; //Reinica el valor del .failureDetected a Negativo o falso
-    delay(250);
-    Serial.println("Receptor Fallando,Reiniciando"); 
-    Configuracion();//Se introduce nuevamente la configuracion Inicial  
+  if(NRF24.failureDetected){ //NRF24.failureDetected detecta un fallo en las conexiones Fisicas del NRF24
+       NRF24.failureDetected = false; //Reinica el valor del .failureDetected a Negativo o falso
+        delay(250);
+        Serial.println("NRF24 Fallando,Reiniciando"); 
+       Configuracion();//Se introduce nuevamente la configuracion Inicial  
   }
   
 }
 
+
+Transmitir_Control_Remoto(){
+        NRF24.stopListening(); // Deja de escuchar para empezar a Hablar
+         
+}
+
 Leer_Control_Remoto()
 {
-    Receptor.openWritingPipe(Pipes[1]); // Abre la dirección de la tubería para comenzar a escribir
-    Receptor.openReadingPipe(1,Pipes[0]); // Abre el pipe para comenzar aleer
-    Receptor.startListening(); // Empieza a escuchar
+     NRF24.startListening(); // Empieza a escuchar
+     while (  radio.available() )
 }
 
 void steup()

@@ -1,0 +1,169 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+#define VELOCIDAD_DATA RF24_1MBPS // Velocidad de datos 
+#define CANALES 2 // Número de canales a utilizar
+#define Intentos_Delay_Conexion 5000 // Timepo entre cada intento para comprobar conexiones
+#define Intentos_Delay 250 // Timepo entre cada intento para enviar datos
+//#define Intentos_Delay ?? // Timepo entre cada intento para enviar datos
+#define Energia RF24_PA_MAX //Nivel de alimentacion del NRF24
+#define REPS_SCAN 50 // Número de repeticiones al escanear el canal
+
+#define JOY_X A5
+#define JOY_Y A4
+
+bool Rol = 0; //elige un rol entre 0 (control remoto) y 1 (Robot);
+
+struct Valor{
+  int Pos_X;
+  int Pos_Y;
+};
+Valor Lecturas;
+
+RF24 radio(9,10); //Declaramos El C.E  y el C.S
+
+const byte direccion[][CANALES] = {0xFFFFA0, 0xFFFFB0}; // Direcciones de tuberías
+
+uint32_t tiempoUso =  millis();
+/*************************************************************/
+//Funcion para Leer en el radio cuando de se trabaja como receptor
+void Leer(){
+
+  radio.startListening();                  //Empezamos a escuchar para para empezar a recibir
+  radio.read(&Lecturas, sizeof(Lecturas)); //Lee el paquete de la estructura "Valor" del tamaño de la estructura
+}
+
+//Funcion para Escribir en radio cuando se trabaja como transmisor
+void Escribir(Valor){
+  radio.stopListening();
+  radio.write(&Lecturas, sizeof(Lecturas));//Dejamos de escuchar para empezar a transmitir
+}
+
+/**************************************************************/
+//Funcion que configura el radio
+
+void Configurar(){
+
+  radio.begin();                            //Inicializa el chip nRF24L01
+
+  radio.openReadingPipe(1, direccion[0]);  //Abrimos la tuberia en "0xFFFFA0" para recibir
+  radio.openWritingPipe(direccion[0]);    //Abrimos la tuberia en "0xFFFFA0" para transmitir
+
+  radio.setDataRate(VELOCIDAD_DATA);           //Configura la taza de transmision
+  radio.setPALevel(Energia);          //Conigura el chip en un estado Maximo de energia para mejor comunicacion
+  radio.printDetails();                   //Imprime la informacion de chip
+}
+
+/*******************************************************************************************************/
+//Funcion que cuenta el tiempo antes de triggerear un fallo
+
+void Temporizador_Fallos(){
+
+  if( millis()  - tiempoUso > Intentos_Delay_Conexion){        //Checa cada "Intentos_Delay_Conexion" que la conexion sea correcta
+
+          tiempoUso = millis();
+          if(radio.getDataRate() != VELOCIDAD_DATA){ //Si alguna configuracion es diferente, en este caso, Data Rate
+            radio.failureDetected = true;             //Triguerea el fallo e imprime error
+            Serial.println("Error");
+          }  
+    }
+      
+}
+/*********************************************************************************************************/
+
+void Temporizador_Fallos_Dteccion(){
+      if (micros() - empezarEsperar > 200000 ){            // Si espera mas de 200ms se sale del loop
+          timeout = true;
+          break;
+      }    
+}
+/*******************************************************************************************************/
+
+void DetectarFallos(){
+
+    Temporizador_Fallos();
+    if(radio.failureDetected){ //radio.failureDetected detecta un fallo en las conexiones Fisicas del NRF24
+        radio.failureDetected = false; //Reinica el valor del .failureDetected a Negativo o falso
+        delay(250);
+        Serial.println("NRF24 Fallando,reiniciando"); 
+        Configurar();//Se introduce nuevamente la configuracion Inicial  
+    }
+}
+
+
+/*******************************************************************************************************/
+
+while ( ! radio.available() ){                             // Mientras nada sea recivido
+  
+    }
+        
+    if ( timeout ){                                             // Describe the results
+        Serial.println(F("Failed, response timed out."));
+    }else{
+        unsigned long got_time;                                 //Lo tomo, lo compara y lo envia
+        
+        //Failure Handling:
+        uint32_t Tempoizadorfallo = millis();
+        while(radio.available()){                              
+          if(millis() - Temporizado fallo > 250){
+            radio.failureDetected = true;
+            Serial.println("Radio disponible pero error");
+            break;
+          }
+          radio.read( &got_time, sizeof(unsigned long) );
+        }
+        unsigned long end_time = micros();
+
+/****************************************************************************************************/
+//Funcion Para el primer inicio de comunicaciones entre el control Remorto y el Robot
+
+void Iniciar(){
+  
+    if(Rol  ==  1){
+
+    void DetectarFallos();//Manda a llamar la funcion DetectarFallos
+    void Escribir(Valor);//Manda a llamar la funcion Escriibir(No estoy seguro que funciona asi)
+    
+    }
+    else{
+
+    void Leer();      
+      
+    }
+
+}
+
+
+
+/****************************************************************************************************/
+//Funcion para cambiar canales, a uno menos transitado
+
+void Optimizar(){
+    while (REPS_SCAN)
+    {
+        byte Interferencia[250];
+        int i = CANALES;
+        while (Interferencia[6])
+        {
+            radio.setChannel(i); // Selección el canal
+
+            if ( radio.testCarrier()) // Tenemos o no interfencia en el canal
+            {
+                ++Interferencia[i]; // Agrega 1 a la interfencia 
+            }
+        }
+
+    }
+}
+
+void setup() {
+
+  
+  void Configurar();
+  
+}
+void loop() {
+  
+  
+}
